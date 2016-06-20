@@ -1,24 +1,20 @@
 import BaseHTTPServer
-import urlparse
-import posixpath
+import handlerutils
 
-class GateHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+class GateHandler(BaseHTTPServer.BaseHTTPRequestHandler,
+    handlerutils.HandlerUtilsMixIn):
     def r_hello(self):
-            self.send_response(200)
-            self.end_headers()
-            self.wfile.write('Hello World!\n')
+        """ Test route """
+        self.finalize('Hello World!\n',
+            headers = (('Content-Type', 'text/plain'),))
+
+    def r_feed(self):
+        pass
         
     routes = {
         '/rss/v1.0/hello': r_hello,
+        '/rss/v1.0/feed': r_feed,
     }
 
     def do_GET(self):
-        path = urlparse.urlparse(self.path).path
-        normpath = posixpath.normpath(path)
-        if normpath in self.routes:
-            self.routes[normpath](self)
-        else:
-            self.send_response(400)
-            self.end_headers()
-            self.wfile.write('Request %s is unsupported!\n' % (repr(normpath),))
-
+        self.route(self.routes)
