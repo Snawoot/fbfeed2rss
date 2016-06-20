@@ -22,3 +22,10 @@ class HandlerUtilsMixIn:
         else:
             self.send_error(400,
                 'Route %s is unsupported!\n' % (repr(normpath),))
+
+    def get_args(self):
+        """ Get query string params """
+        qs = urlparse.urlparse(self.path).query
+        args = urlparse.parse_qs(qs)
+        args = dict( (k, v[0]) for k, v in args.iteritems() )
+        return args
