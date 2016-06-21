@@ -1,5 +1,12 @@
 import BaseHTTPServer
 import handlerutils
+import rssfeed
+import datetime
+import iso8601
+import textwrap
+from utctz import UTCTZ
+
+_rss_mime_type = 'text/xml'
 
 class GateHandler(BaseHTTPServer.BaseHTTPRequestHandler,
     handlerutils.HandlerUtilsMixIn):
@@ -13,6 +20,10 @@ class GateHandler(BaseHTTPServer.BaseHTTPRequestHandler,
             headers = (('Content-Type', 'text/plain'),))
 
     def r_feed(self):
+        if self.command == 'HEAD':
+            self.finalize(headers = (('Content-Type', _rss_mime_type),))
+            return
+
         args = self.get_args()
         if 'id' not in args:
             self.send_error(400, 'Missing required query parameter: id')
@@ -23,11 +34,41 @@ class GateHandler(BaseHTTPServer.BaseHTTPRequestHandler,
         except:
             self.send_error(400, 'Unable to parse integer parameter: id')
             return
-        self.finalize(repr(self.env['key']))
+
+        try:
+            feedobj = self.env.graphapi.get_feed(ID)
+        except:
+            self.send_error(500, 'Unable to fetch feed')
+            return
+            
+        feed = rssfeed.RSSFeed(
+            'https://facebook.com/%s' % (ID,),
+            'Facebook feed %d' % (ID,),
+            'fbfeed2rss feed %d' % (ID,),
+            datetime.datetime.now(UTCTZ())
+        )
+        
+        for post in feedobj['data']:
+            feed.append_item('https://facebook.com/' + post['id'],
+                textwrap.wrap(post['message'])[0] + '...',
+                post['message'],
+                iso8601.parse_date(post['updated_time']),
+                post['id']
+            )
+
+        self.send_response(200)
+        self.send_header('Content-Type', _rss_mime_type)
+        self.send_header('Connection', 'close')
+        self.end_headers()
+        feed.marshal(self.wfile)
+
+    def r_icon(self):
+        self.send_error(404)
         
     routes = {
         '/rss/v1.0/hello': r_hello,
         '/rss/v1.0/feed': r_feed,
+        '/favicon.ico': r_icon
     }
 
     def do_GET(self):
