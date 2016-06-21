@@ -24,7 +24,7 @@ After that you can supply your application token in text file for this program.
 Feel free to run `fbfeed2rss.py` with `-h` or `--help` option to get help on command line options.
 
 ```
-~ ./fbfeed2rss.py -h
+$ ./fbfeed2rss.py -h
 usage: fbfeed2rss.py [-h] [-H ADDRESS] [-p PORT] [-k KEYFILE]
 
 Facebook feed API to RSS gate
@@ -38,3 +38,6 @@ optional arguments:
                         path to application access token (text file containing
                         facebook API access token, default: 'fbtoken.txt')
 ```
+
+When server is up and running RSS feed is available at address:
+`http://server_address:server_port/rss/v1.0/feed?id=<page_numeric_id>`
