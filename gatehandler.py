@@ -41,10 +41,16 @@ class GateHandler(BaseHTTPServer.BaseHTTPRequestHandler,
             self.send_error(500, 'Unable to fetch feed')
             return
             
+        try:
+            groupobj = self.env.graphapi.get_group(ID)
+            groupname = groupobj['name']
+        except:
+            groupname = 'Facebook feed %d' % (ID,)
+            
         feed = rssfeed.RSSFeed(
             'https://facebook.com/%s' % (ID,),
-            'Facebook feed %d' % (ID,),
-            'fbfeed2rss feed %d' % (ID,),
+            groupname,
+            groupname,
             datetime.datetime.now(UTCTZ())
         )
         

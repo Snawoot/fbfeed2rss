@@ -45,4 +45,7 @@ if __name__ == '__main__':
     environ = type('Environment', (object,), { "graphapi": fbgraph.FBGraph(key) })
 
     server = ThreadedHTTPServer((args.host, args.port), gatehandler.GateHandler, environ)
-    server.serve_forever()
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
