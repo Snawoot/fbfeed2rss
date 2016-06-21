@@ -36,7 +36,7 @@ class GateHandler(BaseHTTPServer.BaseHTTPRequestHandler,
             return
 
         try:
-            feedobj = self.env.graphapi.get_feed(ID)
+            feedobj = self.env.graphapi.get_feed(ID, limit=100)
         except:
             self.send_error(500, 'Unable to fetch feed')
             return
@@ -55,9 +55,10 @@ class GateHandler(BaseHTTPServer.BaseHTTPRequestHandler,
         )
         
         for post in feedobj['data']:
-            feed.append_item('https://facebook.com/' + post['id'],
-                textwrap.wrap(post['message'])[0] + '...',
-                post['message'],
+            posturl = 'https://facebook.com/' + post['id']
+            feed.append_item(posturl,
+                textwrap.wrap(post['message'])[0] + '...' if 'message' in post else post.get('story') or post['id'],
+                post['message'] if 'message' in post else post.get('story', '') + ':' + posturl,
                 iso8601.parse_date(post['updated_time']),
                 post['id']
             )
