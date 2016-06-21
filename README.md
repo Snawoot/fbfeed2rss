@@ -41,3 +41,6 @@ optional arguments:
 
 When server is up and running RSS feed is available at address:
 `http://server_address:server_port/rss/v1.0/feed?id=<page_numeric_id>`
+
+### How do I find group numeric ID?
+Use [Facebook developers tool](https://developers.facebook.com/tools/explorer/?method=GET&path=search%3Fq%3Dfeedme.ru%26type%3Dgroup&version=v2.6). Specify group or page name and type in your request. Response will contain numeric ID in `id` field.
