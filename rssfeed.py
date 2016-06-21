@@ -1,4 +1,4 @@
-from lxml import etree
+import xml.etree.ElementTree as ET
 import datetime
 from utctz import UTCTZ
 from email.Utils import formatdate
@@ -34,60 +34,49 @@ class RSSFeed:
         self._items.append(RSSItem(link, desc, title, pub_date, guid))
 
     def marshal(self, f):
-        feed = etree.Element('rss')
+        feed = ET.Element('rss')
         feed.set('version', '2.0')
 
-        channel = etree.Element('channel')
-        feed.append(channel)
+        channel = ET.SubElement(feed, 'channel')
 
         if self.title is not None:
-            title = etree.Element('title')
+            title = ET.SubElement(channel, 'title')
             title.text = self.title
-            channel.append(title)
 
         if self.description is not None:
-            description = etree.Element('description')
+            description = ET.SubElement(channel, 'description')
             description.text = self.description
-            channel.append(description)
 
         if self.link is not None:
-            link = etree.Element('link')
+            link = ET.SubElement(channel, 'link')
             link.text = self.link
-            channel.append(link)
 
         if self.build_date is not None:
-            build_date = etree.Element('lastBuildDate')
+            build_date = ET.SubElement(channel, 'lastBuildDate')
             build_date.text = to_rss_date(self.build_date)
-            channel.append(build_date)
 
         for i in self._items:
-            item = etree.Element('item')
+            item = ET.SubElement(channel, 'item')
 
             if i.title is not None:
-                title = etree.Element('title')
+                title = ET.SubElement(item, 'title')
                 title.text = i.title
-                item.append(title)
 
             if i.description is not None:
-                description = etree.Element('description')
+                description = ET.SubElement(item, 'description')
                 description.text = i.description
-                item.append(description)
 
             if i.link is not None:
-                link = etree.Element('link')
+                link = ET.SubElement(item, 'link')
                 link.text = i.link
-                item.append(link)
 
             if i.pub_date is not None:
-                pub_date = etree.Element('pubDate')
+                pub_date = ET.SubElement(item, 'pubDate')
                 pub_date.text = to_rss_date(i.pub_date)
-                item.append(pub_date)
 
             if i.guid is not None:
-                guid = etree.Element('guid')
+                guid = ET.SubElement(item, 'guid')
                 guid.text = i.guid
-                item.append(guid)
-            channel.append(item)
 
 
-        etree.ElementTree(feed).write(f, encoding='utf-8', xml_declaration=True) 
+        ET.ElementTree(feed).write(f, encoding='utf-8', xml_declaration=True) 
