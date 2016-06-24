@@ -5,7 +5,7 @@ class HandlerUtilsMixIn:
     def finalize(self, body = None, code = 200, errmsg = None, headers = []):
         """ Utility function which covers full HTTP response cycle
         for given code, body and headers """
-        self.send_response(200, errmsg)
+        self.send_response(code, errmsg)
         for h,v in headers:
             self.send_header(h, v)
         self.end_headers()
