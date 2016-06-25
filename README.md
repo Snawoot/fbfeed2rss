@@ -23,6 +23,8 @@ After that you can supply your application token in text file for this program.
 ### Usage
 Feel free to run `fbfeed2rss.py` with `-h` or `--help` option to get help on command line options.
 
+Use built-in web-interface (`http://server_address:server_port/`) to get RSS URL by facebook group URL.
+
 ```
 $ ./fbfeed2rss.py -h
 usage: fbfeed2rss.py [-h] [-H ADDRESS] [-p PORT] [-k KEYFILE]
@@ -43,4 +45,8 @@ When server is up and running RSS feed is available at address:
 `http://server_address:server_port/rss/v1.0/feed?id=<page_numeric_id>`
 
 ### How do I find group numeric ID?
+#### Option 1
+Use web-interface on root URL of web-application (`http://server_address:server_port/`)
+
+#### Option 2
 Use [Facebook developers tool](https://developers.facebook.com/tools/explorer/?method=GET&path=search%3Fq%3Dfeedme.ru%26type%3Dgroup&version=v2.6). Specify group or page name and type in your request. Response will contain numeric ID in `id` field.
