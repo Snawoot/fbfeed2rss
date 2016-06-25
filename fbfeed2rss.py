@@ -1,4 +1,5 @@
 #!/usr/bin/python
+import sys
 import BaseHTTPServer
 import SocketServer
 import gatehandler
@@ -42,10 +43,15 @@ if __name__ == '__main__':
     if not key:
         raise ValueError("Key file is empty!")
 
-    environ = type('Environment', (object,), { "graphapi": fbgraph.FBGraph(key) })
+    ga = fbgraph.FBGraph(key)
+    print >> sys.stderr, "Creating FB test user account via FB Graph API. Please wait..."
+    with ga.create_user() as fbuser:
+        print >> sys.stderr, "Done."
+        environ = type('Environment', (object,), { "graphapi": ga, "fbuser": fbuser})
 
-    server = ThreadedHTTPServer((args.host, args.port), gatehandler.GateHandler, environ)
-    try:
-        server.serve_forever()
-    except KeyboardInterrupt:
-        pass
+        server = ThreadedHTTPServer((args.host, args.port), gatehandler.GateHandler, environ)
+        try:
+            server.serve_forever()
+        except KeyboardInterrupt:
+            print >> sys.stderr, "Stoping and cleaning up..."
+    print >> sys.stderr, "Cleanup complete."
