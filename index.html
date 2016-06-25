@@ -1,0 +1,93 @@
+<html>
+<head>
+<style>
+</style>
+<script src="https://code.jquery.com/jquery-1.12.4.min.js" integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ=" crossorigin="anonymous"></script>
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+</head>
+<title>fbfeed2rss</title>
+<body>
+<form class="form-horizontal" id="urlForm">
+<fieldset>
+
+<!-- Form Name -->
+<legend>fbfeed2rss</legend>
+
+<!-- Text input-->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="urlbox">Facebook group URL:</label>  
+  <div class="col-md-6">
+  <input id="urlbox" name="urlbox" type="text" placeholder="Paste facebook feed URL here" class="form-control input-md" required="">
+    
+  </div>
+</div>
+
+<!-- Button -->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="singlebutton"></label>
+  <div class="col-md-6">
+    <button id="singlebutton" name="singlebutton" class="btn btn-primary">Get RSS URL</button>
+  </div>
+</div>
+
+</fieldset>
+</form>
+
+<!-- Button Drop Down -->
+<form class="form-horizontal" id="resultForm" style="display: none">
+<fieldset>
+<div class="form-group">
+  <label class="col-md-4 control-label" for="buttondropdown">RSS feed URL:</label>
+  <div class="col-md-6">
+<!--    <div class="input-group"> -->
+      <input id="resultbox" name="buttoncopy" class="form-control" placeholder="RSS feed address will appear here" type="text">
+<!--      <div class="input-group-btn">
+        <button id="copybtn" type="button" class="btn btn-default">
+          Copy
+        </button>
+      </div> -->
+<!--    </div> -->
+  </div>
+</div>
+</fieldset>
+</form>
+</body>
+<script>
+function qualifyURL(url){
+    var img = document.createElement('img');
+    img.src = url; // set string url
+    url = img.src; // get qualified url
+    img.src = null; // no server request
+    return url;
+}
+
+function submitHandler(event) {
+    event.preventDefault();
+	url = $("#urlbox").val()
+    $.ajax({
+        type: "GET",
+        url: "/resolve/v1.0/page_id",
+        data: {url: url},
+        success : function(text){
+            rb = $('#resultbox');
+            rssurl = qualifyURL('rss/v1.0/feed') + '?id=' + text;
+			rb.val(rssurl);
+            $("#resultForm").slideDown("fast");
+            rb.focus();
+            rb.select();
+        },
+        error : function(jqXHR, textStatus, errorThrown){
+			alert(errorThrown);
+        }
+    });
+}
+$("#urlForm").submit(submitHandler);
+</script>
+</html>

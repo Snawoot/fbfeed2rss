@@ -7,8 +7,10 @@ import textwrap
 from utctz import UTCTZ
 import urlparse
 import htmlutils
+import os.path
 
 _rss_mime_type = 'text/xml'
+_html_mime_type = 'text/html'
 _plain_mime_type = 'text/plain'
 _allowed_fetch_domains = set(('facebook.com','www.facebook.com'))
 _allowed_fetch_schemes = set(('http','https'))
@@ -24,7 +26,7 @@ class GateHandler(BaseHTTPServer.BaseHTTPRequestHandler,
     def r_hello(self):
         """ Test route """
         self.finalize('Hello World!\n',
-            headers = (('Content-Type', 'text/plain'),))
+            headers = (('Content-Type', _plain_mime_type),))
 
     def r_feed(self):
         if self.command == 'HEAD':
@@ -133,7 +135,17 @@ class GateHandler(BaseHTTPServer.BaseHTTPRequestHandler,
         ID = ''.join([c for c in ta['content'][::-1] if c.isdigit()][::-1])
         self.finalize(ID)
 
+    def r_index(self):
+        path = os.path.join(self.env.approot, 'index.html')
+        with open(path) as f:
+            content = f.read()
+        self.finalize(content,
+            headers = (('Content-Type', _html_mime_type),))
+
     routes = {
+        '/': r_index,
+        '/index.html': r_index,
+        '/index.htm': r_index,
         '/rss/v1.0/hello': r_hello,
         '/rss/v1.0/feed': r_feed,
         '/resolve/v1.0/page_id': r_resolver,
