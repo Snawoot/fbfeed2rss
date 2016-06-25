@@ -7,7 +7,6 @@ import textwrap
 from utctz import UTCTZ
 import urlparse
 import htmlutils
-import os.path
 
 _rss_mime_type = 'text/xml'
 _html_mime_type = 'text/html'
@@ -79,7 +78,7 @@ class GateHandler(BaseHTTPServer.BaseHTTPRequestHandler,
         feed.marshal(self.wfile)
 
     def r_icon(self):
-        self.send_error(404)
+        self.serve_static('favicon.ico')
 
     def r_resolver(self):
         if self.command == 'HEAD':
@@ -136,11 +135,7 @@ class GateHandler(BaseHTTPServer.BaseHTTPRequestHandler,
         self.finalize(ID)
 
     def r_index(self):
-        path = os.path.join(self.env.approot, 'index.html')
-        with open(path) as f:
-            content = f.read()
-        self.finalize(content,
-            headers = (('Content-Type', _html_mime_type),))
+        self.serve_static('index.html')
 
     routes = {
         '/': r_index,

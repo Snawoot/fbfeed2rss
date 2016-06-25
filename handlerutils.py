@@ -1,5 +1,7 @@
 import urlparse
 import posixpath
+import os.path
+import mimetypes
 
 class HandlerUtilsMixIn:
     def finalize(self, body = None, code = 200, errmsg = None, headers = []):
@@ -29,3 +31,12 @@ class HandlerUtilsMixIn:
         args = urlparse.parse_qs(qs)
         args = dict( (k, v[0]) for k, v in args.iteritems() )
         return args
+
+    def serve_static(self, filename, mimetype = None):
+        if mimetype is None:
+            mimetype = mimetypes.guess_type(filename)[0]
+        path = os.path.join(self.env.approot, filename)
+        with open(path) as f:
+            content = f.read()
+        self.finalize(content,
+            headers = (('Content-Type', mimetype),))
