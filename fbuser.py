@@ -35,6 +35,18 @@ class FBUser:
         o = json.load(urllib2.urlopen(requrl, data='', timeout = self._timeout))
         return o['id'], o['email'], o['password']
 
+    def _eliminate_uid(self):
+        requrl = _user_url % {
+            'access_token': self._access_token,
+            'ID': self.uid
+        }
+        opener = urllib2.build_opener(urllib2.HTTPHandler)
+        request = urllib2.Request(requrl)
+        request.get_method = lambda: 'DELETE'
+        o = json.load(opener.open(request, timeout = self._timeout))
+        if not o['success']:
+            raise Exception('FBUser uid=%d: elimination failed!' % (self.uid,))
+
     def _auth_session(self):
         cj = CookieJar()
         opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
@@ -50,7 +62,7 @@ class FBUser:
         opener.open(_fblogin_url, formdata).read()
         return cj
 
-    def fetch_url(self, args*):
+    def fetch_url(self, *args):
         opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.session))
         return opener.open(*args).read()
 

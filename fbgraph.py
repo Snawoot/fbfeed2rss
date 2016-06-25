@@ -1,6 +1,7 @@
 import urllib
 import urllib2
 import json
+import fbuser
 
 _feed_url = 'https://graph.facebook.com/v2.6/%(ID)d/feed?access_token=%(access_token)s&limit=%(limit)d'
 _group_url = 'https://graph.facebook.com/v2.6/%(ID)d?access_token=%(access_token)s'
@@ -35,8 +36,8 @@ class FBGraph:
         return o
 
     def create_user(self):
-        if self.app_id is None:
-            raise ValueError('Unable to create user with Graph API instance initizized with page or user access token')
+        if self._app_id is None:
+            raise ValueError('Unable to create user with Graph API instance initialized with page or user access token')
         else:
             return fbuser.FBUser(
                 self._access_token,

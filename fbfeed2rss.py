@@ -42,7 +42,9 @@ if __name__ == '__main__':
     if not key:
         raise ValueError("Key file is empty!")
 
-    environ = type('Environment', (object,), { "graphapi": fbgraph.FBGraph(key) })
+    ga = fbgraph.FBGraph(key)
+    fbuser = ga.create_user()
+    environ = type('Environment', (object,), { "graphapi": ga, "fbuser": fbuser})
 
     server = ThreadedHTTPServer((args.host, args.port), gatehandler.GateHandler, environ)
     try:
