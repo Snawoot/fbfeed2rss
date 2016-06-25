@@ -130,8 +130,8 @@ class GateHandler(BaseHTTPServer.BaseHTTPRequestHandler,
             self.send_error(500, 'Unable to parse document body')
             return
 
-        ID = ''.join([c for c in ta['content'][::-1] if c.isdecimal()][::-1])
-        self.finalize(200, ID)
+        ID = ''.join([c for c in ta['content'][::-1] if c.isdigit()][::-1])
+        self.finalize(ID)
 
     routes = {
         '/rss/v1.0/hello': r_hello,
