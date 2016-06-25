@@ -5,8 +5,14 @@ import datetime
 import iso8601
 import textwrap
 from utctz import UTCTZ
+import urlparse
+import htmlutils
 
 _rss_mime_type = 'text/xml'
+_plain_mime_type = 'text/plain'
+_allowed_fetch_domains = set(('facebook.com','www.facebook.com'))
+_allowed_fetch_schemes = set(('http','https'))
+_allowed_fetch_ports = set((80,443,None))
 
 class GateHandler(BaseHTTPServer.BaseHTTPRequestHandler,
     handlerutils.HandlerUtilsMixIn):
@@ -14,6 +20,7 @@ class GateHandler(BaseHTTPServer.BaseHTTPRequestHandler,
         self.env = env
         BaseHTTPServer.BaseHTTPRequestHandler.__init__(self,
             request, client_address, server)
+
     def r_hello(self):
         """ Test route """
         self.finalize('Hello World!\n',
@@ -71,10 +78,65 @@ class GateHandler(BaseHTTPServer.BaseHTTPRequestHandler,
 
     def r_icon(self):
         self.send_error(404)
-        
+
+    def r_resolver(self):
+        if self.command == 'HEAD':
+            self.finalize(headers = (('Content-Type', _plain_mime_type),))
+            return
+
+        args = self.get_args()
+        if 'url' not in args:
+            self.send_error(400, 'Missing required query parameter: url')
+            return
+
+        url = args['url']
+        uc = urlparse.urlparse(url, 'http')
+
+        if uc.username is not None or uc.password is not None:
+            self.send_error(400, 'HTTP Basic auth not allowed')
+            return
+
+        if uc.port not in _allowed_fetch_ports:
+            self.send_error(400, 'Port not allowed')
+            return
+
+        if uc.scheme not in _allowed_fetch_schemes:
+            self.send_error(400, 'URL scheme not allowed')
+            return
+
+        if uc.hostname not in _allowed_fetch_domains:
+            self.send_error(400, 'URL domain not allowed')
+            return
+
+        try:
+            text = self.env.fbuser.fetch_url(url)
+        except:
+            self.send_error(500, 'Unable to fetch URL')
+            return
+
+        try:
+            te = htmlutils.TagExtractor(['html','head','meta'], [('property', 'al:android:url')])
+            te.feed(text)
+        except:
+            self.send_error(500, 'Unable to parse document body')
+            return
+
+        if te.found is None:
+            self.send_error(500, 'Unable to parse document body')
+            return
+
+        ta = dict(te.found)
+        if 'content' not in ta:
+            self.send_error(500, 'Unable to parse document body')
+            return
+
+        ID = ''.join([c for c in ta['content'][::-1] if c.isdecimal()][::-1])
+        self.finalize(200, ID)
+
     routes = {
         '/rss/v1.0/hello': r_hello,
         '/rss/v1.0/feed': r_feed,
+        '/resolve/v1.0/page_id': r_resolver,
         '/favicon.ico': r_icon
     }
 
