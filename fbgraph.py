@@ -42,6 +42,6 @@ class FBGraph:
             return fbuser.FBUser(
                 self._access_token,
                 self._app_id,
-                self._timeout
+                30
             )
 

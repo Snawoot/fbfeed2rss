@@ -1,9 +1,10 @@
 import urllib
 import urllib2
 import json
+import cookielib
 
-_test_users_url = 'https://graph.facebook.com/v2.6/%(app_id)d/accounts/test-users?access_token=%(access_token)'
-_user_url = 'https://graph.facebook.com/v2.6/%(ID)d?access_token=%(access_token)s'
+_test_users_url = 'https://graph.facebook.com/v2.6/%(app_id)d/accounts/test-users?access_token=%(access_token)s'
+_user_url = 'https://graph.facebook.com/v2.6/%(ID)s?access_token=%(access_token)s'
 
 _fb_url = 'https://facebook.com/'
 _fblogin_url = 'https://www.facebook.com/login.php?login_attempt=1'
@@ -27,6 +28,9 @@ class FBUser:
         self.uid, self.email, self.passwd = self._create_uid()
         self.session = self._auth_session()
 
+    def __enter__(self):
+        return self
+
     def _create_uid(self):
         requrl = _test_users_url % {
             'access_token': self._access_token,
@@ -48,13 +52,13 @@ class FBUser:
             raise Exception('FBUser uid=%d: elimination failed!' % (self.uid,))
 
     def _auth_session(self):
-        cj = CookieJar()
+        cj = cookielib.CookieJar()
         opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cj))
         opener.open(_fb_url).read()
         formdata = urllib.urlencode(
             {
-                'email': email,
-                'pass': passwd,
+                'email': self.email,
+                'pass': self.passwd,
                 'persistent':'',
                 'default_persistent': 1
             }
@@ -66,7 +70,7 @@ class FBUser:
         opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.session))
         return opener.open(*args).read()
 
-    def __del__(self):
+    def __exit__(self, exception_type, exception_val, trace):
         if self.uid is not None:
             self._eliminate_uid()
 
