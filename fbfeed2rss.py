@@ -5,6 +5,7 @@ import SocketServer
 import gatehandler
 import argparse
 import fbgraph
+import os.path
 
 default_host = '0.0.0.0'
 default_port = 1716
@@ -43,11 +44,12 @@ if __name__ == '__main__':
     if not key:
         raise ValueError("Key file is empty!")
 
+    app_root = os.path.dirname(os.path.realpath(__file__))
     ga = fbgraph.FBGraph(key)
     print >> sys.stderr, "Creating FB test user account via FB Graph API. Please wait..."
     with ga.create_user() as fbuser:
         print >> sys.stderr, "Done."
-        environ = type('Environment', (object,), { "graphapi": ga, "fbuser": fbuser})
+        environ = type('Environment', (object,), { "graphapi": ga, "fbuser": fbuser, 'approot': app_root})
 
         server = ThreadedHTTPServer((args.host, args.port), gatehandler.GateHandler, environ)
         try:
